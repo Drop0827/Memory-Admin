@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+
 import { useStorage } from '@vueuse/core'
 import type { User } from '@/types/app/user'
 import type { Role } from '@/types/app/role'

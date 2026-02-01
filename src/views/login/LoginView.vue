@@ -15,7 +15,7 @@
     <div class="relative w-full max-w-md">
       <div class="bg-white/50 backdrop-blur-sm rounded-md shadow-2xl p-8 border border-white/20">
         <div class="flex justify-center space-x-4 mb-8">
-          <img src="/logo.png" alt="" class="w-12 h-12" />
+          <img src="@/assets/logo.svg" alt="" class="w-12 h-12" />
           <div class="flex flex-col">
             <h1 class="font-bold text-lg text-slate-700">Memory</h1>
             <p class="text-slate-400 text-sm">现代化博客管理系统</p>

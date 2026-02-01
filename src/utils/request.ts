@@ -3,7 +3,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 
 // 配置项目API域名
-export const baseURL = import.meta.env.VITE_PROJECT_API
+export const baseURL = import.meta.env.VITE_PROJECT_API || 'http://localhost:8080/api'
 
 // 创建 axios 实例
 export const instance = axios.create({

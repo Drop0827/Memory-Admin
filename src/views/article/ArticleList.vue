@@ -444,8 +444,8 @@ const handleImport = async () => {
           <el-button
             type="primary"
             @click="
-              pagination.page = 1
-              fetchData()
+              pagination.page = 1;
+              fetchData();
             "
             >筛选</el-button
           >
