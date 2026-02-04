@@ -3,7 +3,7 @@ import { ref, reactive, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { type FormInstance, ElMessage } from 'element-plus'
 import { addArticleDataAPI, editArticleDataAPI } from '@/api/article'
-import { getCateListAPI } from '@/api/cate'
+import { getCateListAPI, addCateDataAPI } from '@/api/cate'
 import { getTagListAPI, addTagDataAPI } from '@/api/tag'
 import useAssistant from '@/composables/useAssistant'
 import Material from '@/components/Material/index.vue'
@@ -61,8 +61,40 @@ const rules = {
 const getCateList = async () => {
   const { data } = await getCateListAPI()
   const list = data as Cate[]
-  // Filter type 'cate' ?
-  cateList.value = list.filter((item) => item.type === 'cate')
+
+  // 自动检查并创建缺少的分类
+  const requiredCates = [
+    { name: '开发笔记', mark: 'dev-notes' },
+    { name: '生活随笔', mark: 'life' },
+    { name: '大学生生活', mark: 'college' },
+  ]
+  const existingNames = list.map((c) => c.name)
+  let changed = false
+
+  for (const item of requiredCates) {
+    if (!existingNames.includes(item.name)) {
+      try {
+        await addCateDataAPI({
+          name: item.name,
+          mark: item.mark,
+          type: 'cate',
+          url: '/category/' + item.mark,
+          level: 0,
+          order: 0,
+        } as Cate)
+        changed = true
+      } catch (e) {
+        console.error(`自动创建分类 ${item.name} 失败`, e)
+      }
+    }
+  }
+
+  if (changed) {
+    const res = await getCateListAPI()
+    cateList.value = (res.data as Cate[]).filter((item) => item.type === 'cate')
+  } else {
+    cateList.value = list.filter((item) => item.type === 'cate')
+  }
 }
 
 const getTagList = async () => {

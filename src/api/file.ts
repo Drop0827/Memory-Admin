@@ -18,3 +18,9 @@ export const getFileListAPI = (dir: string, paging?: Page) =>
 
 // 获取目录列表
 export const getDirListAPI = () => Request<FileDir[]>('GET', '/file/dir')
+
+// 添加外部链接文件
+export const addExternalFileAPI = (dir: string, url: string) =>
+  Request<string>('POST', '/file/external', {
+    data: { dir, url },
+  })

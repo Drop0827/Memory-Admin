@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import { MdEditor, NormalToolbar } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import Material from '@/components/Material/index.vue'
+import { baseURL } from '@/utils/request'
+import { useUserStore } from '@/stores'
 
 defineProps<{
   modelValue: string
@@ -14,14 +16,34 @@ const emit = defineEmits<{
 
 const isMaterialOpen = ref(false)
 
-const onUploadImg = async () => {
-  // We want to use our Material component instead of direct upload if possible,
-  // Or we strictly implement upload.
-  // The requirement was to use Material component.
-  // md-editor-v3 standard upload handler just takes files.
-  // If we want to use Material (Select from gallery OR upload), we should probably use a custom toolbar button.
-  // OR we hijack this.
-  // Let's implement custom toolbar button for Material.
+const editorRef = ref()
+
+const onUploadImg = async (files: File[], callback: (urls: string[]) => void) => {
+  const formData = new FormData()
+  formData.append('dir', 'article')
+
+  files.forEach((file) => {
+    formData.append('files', file)
+  })
+
+  try {
+    const res = await fetch(`${baseURL}/file`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${useUserStore().token}`,
+      },
+    })
+
+    const result = await res.json()
+    if (result.code === 200) {
+      callback(result.data)
+    } else {
+      console.error(result.message)
+    }
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 const openMaterial = () => {
@@ -37,6 +59,7 @@ const openMaterial = () => {
 <template>
   <div class="h-full">
     <MdEditor
+      ref="editorRef"
       :model-value="modelValue"
       @update:modelValue="(val) => emit('update:modelValue', val)"
       class="h-full"
@@ -64,13 +87,13 @@ const openMaterial = () => {
       @update:open="(val) => (isMaterialOpen = val)"
       @select="
         (urls) => {
-          // How to insert?
-          // We need access to editor instance to insert at cursor.
-          // MdEditor exposes `insert` via ref?
-          // Actually in v3, we can modify modelValue, but cursor is tricky.
-          // Let's just append for now creates less bugs than complex cursor logic without proper API access.
           const text = urls.map((url) => `![](${url})`).join('\n')
-          emit('update:modelValue', modelValue + '\n' + text)
+          editorRef?.insert(() => ({
+            targetValue: text,
+            select: false,
+            deviationStart: 0,
+            deviationEnd: 0,
+          }))
         }
       "
     />
