@@ -27,3 +27,6 @@ export const getCatePagingAPI = (data?: QueryData) =>
       ...data?.pagination,
     },
   })
+
+// 获取分类文章统计
+export const getCategoryArticleCountAPI = () => Request<any[]>('GET', '/cate/article/count')

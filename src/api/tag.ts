@@ -27,3 +27,6 @@ export const getTagPagingAPI = (data?: QueryData) =>
       ...data?.pagination,
     },
   })
+
+// 获取标签文章统计
+export const getTagArticleCountAPI = () => Request<any[]>('GET', '/tag/article/count')

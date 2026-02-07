@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Title :value="id ? '编辑说说' : '发布说说'" />
+    <Title :value="id ? '编辑闪念' : '发布闪念'" />
 
     <el-card class="mt-2 min-h-[calc(100vh-160px)]" :class="titleSty">
       <el-form
@@ -17,11 +17,12 @@
             v-model="form.content"
             type="textarea"
             :autosize="{ minRows: 6, maxRows: 12 }"
-            placeholder="请输入说说内容..."
+            placeholder="记录此刻的想法..."
           />
         </el-form-item>
 
-        <el-form-item label="图片" prop="images">
+        <!-- NOTE: 图片为可选项，不上传图片则以纯文字形式展示 -->
+        <el-form-item label="图片（可选）">
           <div class="flex flex-wrap gap-4">
             <div
               v-for="(img, index) in imageList"
@@ -87,7 +88,7 @@ const isMaterialModalOpen = ref(false)
 const formRef = ref<FormInstance>()
 const form = reactive({
   content: '',
-  images: '',
+  images: '[]', // NOTE: 必须初始化为有效的 JSON，否则数据库 JSON 字段验证会失败
 })
 
 const imageList = computed(() => {
@@ -99,7 +100,7 @@ const imageList = computed(() => {
 })
 
 const rules = reactive<FormRules>({
-  content: [{ required: true, message: '请输入说说内容', trigger: 'blur' }],
+  content: [{ required: true, message: '请输入闪念内容', trigger: 'blur' }],
 })
 
 const getRecordData = async () => {
@@ -108,7 +109,7 @@ const getRecordData = async () => {
     const res = await getRecordDataAPI(+id.value)
     const data = res.data as unknown as Record
     form.content = data.content
-    form.images = typeof data.images === 'string' ? data.images : JSON.stringify(data.images)
+    form.images = typeof data.images === 'string' ? data.images : JSON.stringify(data.images || [])
   } catch (e) {
     console.error(e)
   }

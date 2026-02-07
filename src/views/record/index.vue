@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Title value="说说管理" />
+    <Title value="闪念管理" />
 
     <el-card class="[&>.el-card__body]:!p-3 border-stroke my-2 overflow-scroll">
       <el-form :inline="true" :model="queryForm" class="flex flex-nowrap">
@@ -25,28 +25,37 @@
 
     <el-card class="min-h-[calc(100vh-270px)]" :class="titleSty">
       <el-table :data="recordList" v-loading="loading">
-        <el-table-column prop="id" label="ID" width="100" align="center" />
-        <el-table-column prop="content" label="内容" width="300" align="center">
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column prop="content" label="内容" min-width="300" align="center">
           <template #default="{ row }">
-            <div class="line-clamp-2">{{ row.content }}</div>
+            <div class="line-clamp-2 text-left">{{ row.content }}</div>
           </template>
         </el-table-column>
+        <!-- NOTE: 图片列，仅在有图片时显示内容 -->
         <el-table-column label="图片" width="200" align="center">
           <template #default="{ row }">
-            <div class="flex space-x-2 justify-center">
-              <div v-for="(img, idx) in parseImages(row.images)" :key="idx">
+            <div v-if="hasImages(row.images)" class="flex space-x-2 justify-center">
+              <div v-for="(img, idx) in parseImages(row.images).slice(0, 2)" :key="idx">
                 <el-image
                   :src="img"
-                  style="width: 70px; height: 70px"
+                  style="width: 50px; height: 50px"
                   class="rounded-lg"
                   fit="cover"
-                  :preview-src-list="[img]"
+                  :preview-src-list="parseImages(row.images)"
+                  :initial-index="idx"
                 />
               </div>
+              <span
+                v-if="parseImages(row.images).length > 2"
+                class="text-gray-400 text-sm self-center"
+              >
+                +{{ parseImages(row.images).length - 2 }}
+              </span>
             </div>
+            <span v-else class="text-gray-400 text-sm">无图片</span>
           </template>
         </el-table-column>
-        <el-table-column label="发布时间" sortable :sort-method="sortByDate">
+        <el-table-column label="发布时间" width="180" sortable :sort-method="sortByDate">
           <template #default="{ row }">
             {{ dayjs(+row.createTime).format('YYYY-MM-DD HH:mm:ss') }}
           </template>
@@ -146,19 +155,31 @@ const onFilterSubmit = async () => {
 const delRecordData = async (id: number) => {
   try {
     await delRecordDataAPI(id)
-    ElMessage.success('🎉 删除说说成功')
+    ElMessage.success('🎉 删除闪念成功')
     getRecordList()
   } catch (e) {
     console.error(e)
   }
 }
 
-const parseImages = (jsonStr: string) => {
+/**
+ * 解析图片 JSON 字符串
+ */
+const parseImages = (jsonStr: string): string[] => {
   try {
-    return JSON.parse(jsonStr || '[]')
+    const result = JSON.parse(jsonStr || '[]')
+    return Array.isArray(result) ? result : []
   } catch {
     return []
   }
+}
+
+/**
+ * 检查是否有图片
+ */
+const hasImages = (jsonStr: string): boolean => {
+  const images = parseImages(jsonStr)
+  return images.length > 0
 }
 
 const sortByDate = (a: Record, b: Record) => {
