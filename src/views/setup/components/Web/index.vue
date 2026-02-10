@@ -103,12 +103,41 @@ const initForm = () => {
   form.icp = web.icp || ''
   form.create_time = web.create_time ? dayjs(Number(web.create_time)).toDate() : null
 
-  // Auto-fill user defaults if empty or legacy
-  if (!form.url || form.url.includes('liuyuyang.net')) {
-    form.url = 'https://github.com/Drop0827'
+  // Auto-fill user defaults if empty or legacy (ThriveX defaults)
+  if (!form.title || form.title === 'ThriveX') {
+    form.title = 'Memory'
   }
-  if (!form.favicon || form.favicon.includes('liuyuyang.net')) {
-    form.favicon = 'https://github.com/Drop0827.png'
+  if (!form.subhead || form.subhead.includes('现代化博客管理系统')) {
+    form.subhead = '记录精彩每一刻'
+  }
+  if (!form.footer || form.footer.includes('ThriveX')) {
+    form.footer = 'Copyright © 2026 Memory. All rights reserved.'
+  }
+  if (
+    !form.description ||
+    form.description.includes('ThriveX') ||
+    form.description.includes('最好用的博客')
+  ) {
+    form.description = 'Memory Blog System'
+  }
+  if (!form.keyword || form.keyword.includes('宇阳')) {
+    form.keyword = 'Memory,Blog,Life,Tech'
+  }
+  if (!form.icp || form.icp.includes('豫ICP')) {
+    form.icp = ''
+  }
+
+  // Use the user provided "Website Logo" for favicon
+  if (
+    !form.favicon ||
+    form.favicon.includes('liuyuyang.net') ||
+    form.favicon.includes('github.com')
+  ) {
+    form.favicon = 'https://bu.dusays.com/2026/02/06/6985b746c93fd.png'
+  }
+  // Use localhost or current origin for URL if it points to original author
+  if (!form.url || form.url.includes('liuyuyang.net')) {
+    form.url = window.location.origin
   }
 }
 

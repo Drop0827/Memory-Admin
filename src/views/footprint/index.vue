@@ -93,16 +93,24 @@
         <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入标题" />
         </el-form-item>
-        <el-form-item label="地址" prop="address">
-          <el-input v-model="form.address" placeholder="请输入地址" />
+        <el-form-item label="地名/地址" prop="address">
+          <el-input
+            v-model="form.address"
+            placeholder="请输入地名或地址"
+            @keydown.enter.prevent="getGeocode"
+            @blur="getGeocode"
+          >
+            <template #append>
+              <el-button :loading="geoLoading" @click="getGeocode">
+                <Search class="w-4 h-4" />
+              </el-button>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="坐标纬度" prop="position">
-          <el-input v-model="form.position" placeholder="请输入坐标纬度">
+          <el-input v-model="form.position" placeholder="系统自动生成" readonly>
             <template #prefix>
               <MapPin class="w-4 h-4" />
-            </template>
-            <template #append>
-              <Search class="cursor-pointer" @click="getGeocode" />
             </template>
           </el-input>
         </el-form-item>
@@ -258,7 +266,7 @@ const editFootprintData = async (row: Footprint) => {
     form.position = data.position
     form.images = (data.images as string[]).join('\n')
     form.content = data.content
-    form.createTime = dayjs(+data.createTime!)
+    form.createTime = dayjs(+data.createTime!).toDate()
   } catch (e) {
     console.error(e)
   }
@@ -343,11 +351,18 @@ const onFilterSubmit = async () => {
   }
 }
 
+const geoLoading = ref(false)
+
 const getGeocode = async () => {
   if (!form.address) {
-    ElMessage.warning('请先输入地址')
+    // allow empty to skip if user clears input, or show mild warning if button clicked
     return
   }
+
+  // if already have position and address didn't change enough, maybe skip?
+  // but for now let's just fetch
+
+  geoLoading.value = true
   try {
     const { data } = await axios.get('https://restapi.amap.com/v3/geocode/geo', {
       params: {
@@ -355,14 +370,19 @@ const getGeocode = async () => {
         key: gaodeApKey.value,
       },
     })
-    if (data.geocodes && data.geocodes.length > 0) {
+
+    if (data.status === '1' && data.geocodes && data.geocodes.length > 0) {
       form.position = data.geocodes[0].location
-      ElMessage.success('获取坐标成功')
+      ElMessage.success('定位成功')
     } else {
-      ElMessage.warning('未找到该地址的经纬度')
+      console.warn('Geocode API Error:', data)
+      ElMessage.error(data.info || '定位失败，请检查地址或密钥配置')
     }
   } catch (e) {
     console.error(e)
+    ElMessage.error('定位服务异常，请检查网络或配置')
+  } finally {
+    geoLoading.value = false
   }
 }
 

@@ -15,10 +15,10 @@ onClickOutside(target, () => {
 
 onMounted(() => {
   // Update user info if it matches old defaults or is empty
-  if (!userStore.user.name || userStore.user.name === '宇阳' || userStore.user.name === 'OHH') {
+  if (!userStore.user.name || userStore.user.name === '宇阳') {
     userStore.setUser({
       ...userStore.user,
-      name: 'OH|H',
+      name: 'OHH',
       // email: '2720751424@qq.com', // Keep existing email or update if requested
       avatar: userStore.user.avatar || 'https://ui-avatars.com/api/?name=OHH&background=random',
       role: {

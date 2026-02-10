@@ -24,8 +24,28 @@ instance.interceptors.request.use(
     // But better to access via store instance if possible, or read localStorage directly matching the store config
     const token = localStorage.getItem('token')
 
+    let isExpired = false
+    if (token) {
+      try {
+        const payload = token.split('.')[1]
+        if (payload) {
+          const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+          const json = JSON.parse(window.atob(base64))
+          if (json.exp && Date.now() >= json.exp * 1000) {
+            isExpired = true
+          }
+        }
+      } catch (e) {
+        isExpired = true
+      }
+    }
+
+    if (isExpired) {
+      localStorage.removeItem('token')
+    }
+
     // Remove quotes if it's a double-quoted string (useStorage behavior for strings)
-    const cleanToken = token ? token.replace(/^"(.*)"$/, '$1') : ''
+    const cleanToken = token && !isExpired ? token.replace(/^"(.*)"$/, '$1') : ''
 
     if (cleanToken) config.headers['Authorization'] = `Bearer ${cleanToken}`
 

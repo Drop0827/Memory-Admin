@@ -36,6 +36,60 @@
         </el-form-item>
         <img :src="form.dark_logo" alt="" class="w-1/3 mt-4 rounded" />
 
+        <el-divider content-position="left">作者卡片背景</el-divider>
+        <el-form-item prop="author_bg" label="作者卡片背景图">
+          <el-input v-model="form.author_bg" placeholder="请输入背景图地址">
+            <template #prefix>
+              <Image class="w-4 h-4" />
+            </template>
+            <template #append>
+              <CloudUpload class="cursor-pointer" @click="handleUpload('author_bg')" />
+            </template>
+          </el-input>
+        </el-form-item>
+        <img :src="form.author_bg" alt="" class="w-1/3 mt-4 rounded" />
+
+        <el-divider content-position="left">作者信息</el-divider>
+        <el-form-item prop="author_avatar" label="作者头像">
+          <el-input v-model="form.author_avatar" placeholder="请输入作者头像地址">
+            <template #prefix>
+              <Image class="w-4 h-4" />
+            </template>
+            <template #append>
+              <CloudUpload class="cursor-pointer" @click="handleUpload('author_avatar')" />
+            </template>
+          </el-input>
+        </el-form-item>
+        <img
+          :src="form.author_avatar"
+          alt=""
+          class="w-20 h-20 rounded-full mt-2 object-cover border"
+          v-if="form.author_avatar"
+        />
+
+        <el-form-item prop="record_name" label="作者昵称">
+          <el-input v-model="form.record_name" placeholder="请输入作者昵称 (如: 👋 OHH)" />
+        </el-form-item>
+        <el-form-item prop="record_info" label="个性签名">
+          <el-input v-model="form.record_info" placeholder="请输入个性签名" />
+        </el-form-item>
+
+        <el-divider content-position="left">文章列表封面</el-divider>
+        <el-form-item prop="covers" label="文章列表封面 (侧边栏轮播)">
+          <el-input
+            v-model="form.covers"
+            type="textarea"
+            :autosize="{ minRows: 3, maxRows: 6 }"
+            placeholder="请输入封面图片地址"
+          />
+          <el-alert
+            title="以换行分隔，每行一张图片地址。如果文章没有封面，将从中随机选取一张作为封面。"
+            type="info"
+            :closable="false"
+            class="mt-2"
+          />
+        </el-form-item>
+
         <el-divider content-position="left">首页背景图</el-divider>
         <el-form-item prop="swiper_image" label="首页背景图">
           <el-input v-model="form.swiper_image" placeholder="请输入背景图地址">
@@ -80,50 +134,6 @@
             class="mt-2"
           />
         </el-form-item>
-
-        <el-divider content-position="left">文章随机封面</el-divider>
-        <el-form-item prop="covers" label="文章随机封面">
-          <el-input
-            v-model="form.covers"
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-            placeholder="请输入文章随机封面"
-          />
-          <el-alert
-            title="以换行分隔，每行表示一段文本"
-            type="info"
-            :closable="false"
-            class="mt-2"
-          />
-        </el-form-item>
-
-        <el-divider content-position="left">作者推荐文章</el-divider>
-        <el-form-item prop="reco_article" label="作者推荐文章">
-          <el-input
-            v-model="form.reco_article"
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-            placeholder="请输入作者推荐文章ID"
-          />
-          <el-alert
-            title="以换行分隔，每行表示一段文本"
-            type="info"
-            :closable="false"
-            class="mt-2"
-          />
-        </el-form-item>
-
-        <el-divider content-position="left">侧边栏</el-divider>
-        <el-checkbox-group v-model="form.right_sidebar">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <el-checkbox label="author" value="author">作者信息模块</el-checkbox>
-            <el-checkbox label="runTime" value="runTime">站点时间模块</el-checkbox>
-            <el-checkbox label="randomArticle" value="randomArticle">随机推荐模块</el-checkbox>
-            <el-checkbox label="newComments" value="newComments">最新评论模块</el-checkbox>
-            <el-checkbox label="hotArticle" value="hotArticle">作者推荐模块</el-checkbox>
-            <el-checkbox label="study" value="study">装饰模块</el-checkbox>
-          </div>
-        </el-checkbox-group>
 
         <el-divider content-position="left">文章布局</el-divider>
         <div class="overflow-auto w-full">
@@ -199,7 +209,11 @@ const form = reactive({
   swiper_text: '',
   social: '',
   covers: '',
+  record_name: '',
+  record_info: '',
   reco_article: '',
+  author_bg: '',
+  author_avatar: '',
   right_sidebar: [] as string[],
   is_article_layout: '',
 })
@@ -224,15 +238,42 @@ const getLayoutData = async () => {
     theme.value = data.value
     const t = data.value
 
-    form.light_logo = t.light_logo
-    form.dark_logo = t.dark_logo
+    form.light_logo = t.light_logo || 'https://bu.dusays.com/2026/02/06/6985b746c93fd.png'
+    form.dark_logo = t.dark_logo || 'https://bu.dusays.com/2026/02/07/6987190aeee4d.png'
     form.swiper_image = t.swiper_image
+    form.author_bg = t.author_bg || 'https://bu.dusays.com/2026/02/04/698346b16d065.jpg'
     form.swiper_text = t.swiper_text.join('\n')
+    form.record_name = t.record_name || ''
+    form.record_info = t.record_info || ''
+    form.author_avatar = (t as any).author_avatar || ''
     // Ensure social items are handled correctly regardless of type definitions
     form.social = t.social.map((item: unknown) => JSON.stringify(item)).join('\n')
-    form.covers = t.covers.join('\n')
-    form.reco_article = t.reco_article.join('\n')
-    form.right_sidebar = t.right_sidebar
+
+    // 如果没有配置封面，或者是默认封面（这里简单判断长度），则使用新提供的封面
+    // 实际上用户希望填入这些链接，所以我们优先使用提供的链接填充（因为这是初始化过程）
+    // 但为了不覆盖用户可能已经保存的修改，我们使用 || 逻辑，或者检查是否为空/默认
+    // 鉴于这是一个“初始化配置”的请求，我们假设如果 t.covers 为空或者只有默认值，我们追加或替换
+    const providedCovers = [
+      'https://bu.dusays.com/2026/02/04/698346c017609.jpg',
+      'https://bu.dusays.com/2026/02/04/698346b4ee9f4.png',
+      'https://bu.dusays.com/2026/02/04/698346b3e9880.png',
+      'https://bu.dusays.com/2026/02/04/698346b2163ae.jpg',
+      'https://bu.dusays.com/2026/02/04/698346b2079d6.jpg',
+      'https://bu.dusays.com/2026/02/04/698346b17c425.png',
+      'https://bu.dusays.com/2026/02/04/698346b17d6e5.jpg',
+      'https://bu.dusays.com/2026/02/04/698346b16d065.jpg',
+      'https://bu.dusays.com/2026/02/04/698346b1530ec.jpg',
+      'https://bu.dusays.com/2026/02/04/698346b1404a4.jpg',
+    ].join('\n')
+
+    form.covers = t.covers.length > 0 ? t.covers.join('\n') : providedCovers
+    if (form.covers.length < 50) {
+      // 简单的启发式：如果内容太短，可能是空的或默认的，强制填充一下以便用户看到
+      form.covers = providedCovers
+    }
+
+    form.reco_article = t.reco_article?.join('\n') || ''
+    form.right_sidebar = t.right_sidebar || []
     form.is_article_layout = t.is_article_layout
   } catch (e) {
     console.error(e)
